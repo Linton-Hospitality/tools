@@ -419,7 +419,7 @@ h1, h2 { text-wrap: balance; }
   const CONSTRUCTION = ['infra', 'site', 'units', 'amen'];
 
   // Google Apps Script web app URL. Leave empty to save only in this browser.
-  const ENDPOINT = '';
+  const ENDPOINT = 'https://script.google.com/macros/s/AKfycbxtXmTuDc-A-q1qHeTMzTMC-tB3sZyHmbte6W5ARAMJc9TbiF93JveC6yImMYXbeF4Z_Q/exec';
   const PAGE_URL = location.origin + location.pathname;
   const KEY = 'ferncrest-budget-v3';
   const STATUS = { none: 'Not started', est: 'Ballpark', quote: 'Vendor quote' };
@@ -730,8 +730,11 @@ h1, h2 { text-wrap: balance; }
         setSaved('Saved');
       })
       .catch(() => { if (state.id !== linkId) showStart('We couldn’t load your budget. Check your internet connection and refresh the page.'); });
-  } else if (state.ack) {
+  } else if (state.ack && (!ENDPOINT || state.id)) {
     showBudget();
+  } else if (state.name || state.email) {
+    // Started before cloud saving was on: prefill the sign-up so they can get a link.
+    $('fName').value = state.name || ''; $('fEmail').value = state.email || '';
   }
 })();
 </script>

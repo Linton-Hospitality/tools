@@ -112,6 +112,35 @@ h1, h2 { text-wrap: balance; }
 .sharebar button { min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--sage); background: var(--bg); color: var(--fg); font-size: 13px; font-weight: 500; cursor: pointer; }
 .sharebar button:hover { border-color: var(--accent); }
 .sharelink { width: 100%; font-size: 12px; color: var(--fg-3); overflow-wrap: anywhere; user-select: all; }
+/* Budget bar: property name, switcher, another budget, compare */
+.budgetbar { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
+.budgetbar .field { flex: 1 1 220px; min-width: 0; }
+.budgetbar select, .cmp-pick select { min-height: 46px; border: 1.5px solid var(--sage); border-radius: 10px; background: var(--field); color: var(--fg); padding: 0 10px; font-size: 15px; font-family: inherit; width: 100%; max-width: 100%; }
+.bb-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn-line { min-height: 46px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--sage); background: var(--bg); color: var(--fg); font-size: 14px; font-weight: 500; cursor: pointer; font-family: inherit; }
+.btn-line:hover { border-color: var(--accent); }
+.btn-line:disabled { opacity: .6; cursor: wait; }
+.newpanel { flex: 1 1 100%; display: flex; flex-direction: column; gap: 10px; border-top: 1px solid var(--line-2); padding-top: 12px; }
+.newpanel p { margin: 0; font-size: 13px; color: var(--fg-2); }
+.newpanel .err { margin: 0; color: var(--danger); font-size: 13px; }
+/* Compare */
+.compare { display: flex; flex-direction: column; gap: 16px; padding-block: 24px 48px; }
+.compare h1 { margin: 0; font-family: var(--f-display); font-weight: 400; font-size: clamp(24px, 4vw, 34px); line-height: 1.15; }
+.cmp-picks { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: flex-end; }
+.cmp-pick { flex: 1 1 220px; min-width: 0; display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--fg-2); }
+.cmp-summary { margin: 0; background: var(--band); color: var(--band-fg); border-radius: 12px; padding: 16px 18px; font-size: 15px; line-height: 1.55; }
+.cmp-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.cmp-table { width: 100%; min-width: 520px; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+.cmp-table th, .cmp-table td { padding: 11px 14px; border-bottom: 1px solid var(--line-2); text-align: right; white-space: nowrap; }
+.cmp-table th[scope="row"], .cmp-table thead th:first-child { text-align: left; font-weight: 500; white-space: normal; }
+.cmp-table thead th { font-size: 12px; color: var(--fg-3); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; vertical-align: bottom; white-space: normal; }
+.cmp-table thead th:first-child { position: sticky; left: 0; background: var(--surface); }
+.cmp-table tbody th { position: sticky; left: 0; background: var(--surface); }
+.cmp-table tr.cmp-total th, .cmp-table tr.cmp-total td { font-weight: 700; border-top: 2px solid var(--line); background: var(--surface-2); }
+.cmp-table td.up { color: var(--danger); }
+.cmp-table td.down { color: var(--accent); }
+.cmp-note { margin: 0; font-size: 12px; color: var(--fg-3); }
+
 @media (max-width: 520px) { .fields { grid-template-columns: minmax(0, 1fr); } }
 .start-actions { display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; }
 .btn-primary { min-height: 48px; padding: 0 26px; border: none; border-radius: 999px; background: var(--band); color: var(--band-fg); font-weight: 700; font-size: 15px; cursor: pointer; }
@@ -296,11 +325,35 @@ h1, h2 { text-wrap: balance; }
       </div>
     </div>
 
+    <div class="budgetbar" id="budgetBar">
+      <div class="field">
+        <label for="propName">Property name</label>
+        <input id="propName" type="text" maxlength="100" autocomplete="off" placeholder="e.g. Lake Rd parcel">
+      </div>
+      <div class="field" id="switchWrap" hidden>
+        <label for="budgetSelect">Your budgets</label>
+        <select id="budgetSelect"></select>
+      </div>
+      <div class="bb-actions">
+        <button type="button" class="btn-line" id="newBudgetBtn">+ Another budget</button>
+        <button type="button" class="btn-line" id="compareBtn" hidden>Compare budgets</button>
+      </div>
+      <div class="newpanel" id="newPanel" hidden>
+        <p>Comparing properties or layouts? Start a second budget. It gets its own private link, and this one stays as it is.</p>
+        <div class="bb-actions">
+          <button type="button" class="btn-line" id="newCopy">Copy this budget</button>
+          <button type="button" class="btn-line" id="newBlank">Start blank</button>
+          <button type="button" class="btn-ghost" id="newCancel">Cancel</button>
+        </div>
+        <p class="err" id="newErr" role="alert" hidden>We couldn’t start a new budget. Check your internet connection and try again.</p>
+      </div>
+    </div>
+
     <div class="sharebar" id="shareBar" hidden>
       <span id="shareText">Your budget saves automatically. Want to continue on another device?</span>
       <span class="share-actions">
         <button type="button" id="copyLink">Copy my link</button>
-        <button type="button" id="emailLink">Email me my link</button>
+        <button type="button" id="emailLink">Email me my links</button>
       </span>
       <span class="sharelink" id="shareLink" hidden></span>
     </div>
@@ -338,7 +391,7 @@ h1, h2 { text-wrap: balance; }
           <h2>Start over</h2>
           <div id="resetIdle"><button type="button" class="btn-ghost" id="resetBtn">Clear all my entries</button></div>
           <div class="confirm" id="resetConfirm" hidden>
-            <p class="small">This clears every cost and status on this device. It can't be undone.</p>
+            <p class="small">This clears every cost and status in this budget. It can't be undone.</p>
             <div class="confirm-row">
               <button type="button" class="btn-danger" id="resetYes">Yes, clear everything</button>
               <button type="button" class="btn-ghost" id="resetNo">Cancel</button>
@@ -347,6 +400,23 @@ h1, h2 { text-wrap: balance; }
         </div>
       </aside>
     </div>
+  </section>
+  <!-- Compare two budgets -->
+  <section class="wrap compare" id="compareView" hidden aria-labelledby="cmpTitle">
+    <div><button type="button" class="btn-ghost" id="cmpBack">← Back to my budget</button></div>
+    <h1 id="cmpTitle">Compare budgets</h1>
+    <div class="cmp-picks">
+      <label class="cmp-pick">Budget A<select id="cmpA"></select></label>
+      <label class="cmp-pick">Budget B<select id="cmpB"></select></label>
+    </div>
+    <p class="cmp-summary" id="cmpSummary" role="status"></p>
+    <div class="cmp-scroll">
+      <table class="cmp-table">
+        <thead><tr><th scope="col">Category</th><th scope="col" id="cmpHeadA">A</th><th scope="col" id="cmpHeadB">B</th><th scope="col">Difference (B − A)</th></tr></thead>
+        <tbody id="cmpBody"></tbody>
+      </table>
+    </div>
+    <p class="cmp-note">Only budgets opened on this device are listed. To add another, open its link here.</p>
   </section>
 </main>
 
@@ -422,58 +492,110 @@ h1, h2 { text-wrap: balance; }
   const ENDPOINT = 'https://script.google.com/macros/s/AKfycbxtXmTuDc-A-q1qHeTMzTMC-tB3sZyHmbte6W5ARAMJc9TbiF93JveC6yImMYXbeF4Z_Q/exec';
   const PAGE_URL = location.origin + location.pathname;
   const KEY = 'ferncrest-budget-v3';
+  const LIB_KEY = 'ferncrest-budgets-v1';
   const STATUS = { none: 'Not started', est: 'Ballpark', quote: 'Vendor quote' };
   const NEXT = { none: 'est', est: 'quote', quote: 'none' };
   const ALL = CATS.flatMap(c => c.lines.map(l => ({ ...l, cat: c.id })));
 
-  let state = { units: null, vals: {}, status: {}, qty: {}, open: { units: true } };
+  // state = the person (name, email, ack) plus the budget they have open (id, prop, vals, status, qty, open).
+  let state = { id: null, prop: '', vals: {}, status: {}, qty: {}, open: { units: true } };
   try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && typeof s === 'object') state = { ...state, ...s }; } catch (e) {}
+  // Every budget opened on this device, so people can switch between and compare them.
+  let lib = {};
+  try { const l = JSON.parse(localStorage.getItem(LIB_KEY) || 'null'); if (l && typeof l === 'object') lib = l; } catch (e) {}
+  if (state.id && !lib[state.id]) lib[state.id] = snapshotOf(state);
 
   const $ = (id) => document.getElementById(id);
   const fmt = (n) => '$' + Math.round(n).toLocaleString('en-US');
+  const fmtDiff = (n) => (n > 0 ? '+' : n < 0 ? '−' : '') + fmt(Math.abs(n));
   const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  const clampU = (n) => Math.min(200, Math.max(1, n));
+  const genId = () => Array.from({ length: 32 }, () => '0123456789abcdef'[Math.floor(Math.random() * 16)]).join('');
+  const labelOf = (b) => (b && b.prop) ? b.prop : 'Untitled budget';
   const qv = (id) => ((state.qty || {})[id] || 0);
   const totalUnits = () => qv('un1') + qv('un4');
   function qtyOf(l) {
     if (l.qty) return qv(l.id);
     return l.basis === 'u' ? totalUnits() : 1;
   }
+  function snapshotOf(s) {
+    return { prop: s.prop || '', vals: s.vals || {}, status: s.status || {}, qty: s.qty || {}, open: s.open || { units: true }, savedAt: s.savedAt || 0, remoteAt: s.remoteAt || 0 };
+  }
+  // Totals for any budget (used for the open budget and for comparing).
+  function totalsOf(b) {
+    const q = (id) => ((b.qty || {})[id] || 0);
+    const units = q('un1') + q('un4');
+    const subs = {}, lines = {};
+    let total = 0;
+    CATS.forEach(c => {
+      let sub = 0;
+      c.lines.forEach(l => {
+        const mult = l.qty ? q(l.id) : (l.basis === 'u' ? units : 1);
+        const t = ((b.vals || {})[l.id] || 0) * mult;
+        lines[l.id] = t; sub += t;
+      });
+      subs[c.id] = sub; total += sub;
+    });
+    return { units, domes: q('un1'), cabins: q('un4'), subs, lines, total };
+  }
 
-  let saveTimer = null, remoteTimer = null, remoteBusy = false, remotePending = false, lastSummary = {};
+  // ---- Saving ----
+  let saveTimer = null, remoteTimer = null, remoteBusy = false, sendQueue = [], lastSummary = {}, lastLines = {};
   function setSaved(t) { $('savedNote').hidden = false; $('savedText').textContent = t; }
   function saveLocal() {
-    try { localStorage.setItem(KEY, JSON.stringify(state)); return true; } catch (e) { return false; }
+    try {
+      if (state.id) lib[state.id] = snapshotOf(state);
+      localStorage.setItem(KEY, JSON.stringify(state));
+      localStorage.setItem(LIB_KEY, JSON.stringify(lib));
+      return true;
+    } catch (e) { return false; }
   }
   function save() {
     state.savedAt = Date.now();
     const ok = saveLocal();
-    if (ENDPOINT && state.id) { setSaved('Saving…'); clearTimeout(remoteTimer); remoteTimer = setTimeout(saveRemote, 1200); }
+    if (ENDPOINT && state.id) { setSaved('Saving…'); clearTimeout(remoteTimer); remoteTimer = setTimeout(() => { remoteTimer = null; queueSave(); }, 1200); }
     else setSaved(ok ? 'Saved on this device' : 'Not saved: this browser blocks storage');
   }
   function saveSoon() { clearTimeout(saveTimer); saveTimer = setTimeout(save, 250); }
+  // Send any save that is still waiting, before switching to another budget.
+  function flushSave() {
+    if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; save(); }
+    if (remoteTimer) { clearTimeout(remoteTimer); remoteTimer = null; queueSave(); }
+  }
 
   function api(body) {
     return fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) })
       .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
   }
-  function payloadState() {
-    return JSON.stringify({ vals: state.vals, status: state.status, qty: state.qty, open: state.open });
+  function payloadState(s) {
+    return JSON.stringify({ prop: s.prop || '', vals: s.vals, status: s.status, qty: s.qty, open: s.open });
   }
-  function saveRemote() {
-    if (remoteBusy) { remotePending = true; return; }
+  function queueSave() {
+    const snap = { action: 'save', id: state.id, prop: state.prop || '', state: payloadState(state), summary: lastSummary, lines: lastLines };
+    sendQueue = sendQueue.filter(x => x.id !== snap.id);
+    sendQueue.push(snap);
+    pump();
+  }
+  function pump() {
+    if (remoteBusy || !sendQueue.length) return;
     remoteBusy = true;
-    api({ action: 'save', id: state.id, state: payloadState(), summary: lastSummary })
+    const snap = sendQueue.shift();
+    api(snap)
       .then(res => {
         if (!res.ok) throw new Error(res.error);
-        state.remoteAt = res.savedAt; saveLocal();
-        setSaved('Saved');
+        if (lib[snap.id]) lib[snap.id].remoteAt = res.savedAt;
+        if (state.id === snap.id) state.remoteAt = res.savedAt;
+        saveLocal();
+        if (!sendQueue.length && !remoteTimer) setSaved('Saved');
       })
-      .catch(() => { setSaved('Couldn’t save. Retrying…'); clearTimeout(remoteTimer); remoteTimer = setTimeout(saveRemote, 15000); })
-      .finally(() => { remoteBusy = false; if (remotePending) { remotePending = false; saveRemote(); } });
+      .catch(() => {
+        setSaved('Couldn’t save. Retrying…');
+        if (!sendQueue.some(x => x.id === snap.id)) sendQueue.unshift(snap);
+        setTimeout(pump, 15000);
+      })
+      .finally(() => { remoteBusy = false; if (sendQueue.length) setTimeout(pump, 0); });
   }
   function myLink() { return PAGE_URL + '?b=' + state.id; }
-  function setUrl() { try { if (state.id) history.replaceState(null, '', '?b=' + state.id); } catch (e) {} }
+  function setUrl() { try { if (ENDPOINT && state.id) history.replaceState(null, '', '?b=' + state.id); } catch (e) {} }
 
   let constructionBase = 0;
   function rangeText(l) {
@@ -542,62 +664,110 @@ h1, h2 { text-wrap: balance; }
       </div>`).join('');
   }
 
+
   // ---- Recalculate everything that depends on values ----
   function update() {
-    const units = totalUnits();
-    let total = 0, nQ = 0, nE = 0, nN = 0;
-    const subs = {};
+    const t = totalsOf(state);
+    const units = t.units;
+    let nQ = 0, nE = 0, nN = 0;
     CATS.forEach(c => {
-      let sub = 0, filled = 0;
+      let filled = 0;
       c.lines.forEach(l => {
         const v = state.vals[l.id] || 0;
         const mult = qtyOf(l);
-        sub += v * mult;
         if (v) filled++;
         const s = state.status[l.id] || 'none';
         if (s === 'quote') nQ++; else if (s === 'est') nE++; else nN++;
         if (l.basis === 'u') $('ext-' + l.id).textContent = l.qty ? (mult && v ? '× ' + mult + ' = ' + fmt(v * mult) : '') : (!units ? 'Enter how many domes and cabins above' : '× ' + units + ' units' + (v ? ' = ' + fmt(v * mult) : ''));
       });
-      subs[c.id] = sub;
-      total += sub;
-      $('sub-' + c.id).textContent = fmt(sub);
+      $('sub-' + c.id).textContent = fmt(t.subs[c.id]);
       $('fill-' + c.id).textContent = filled + ' of ' + c.lines.length + ' filled';
     });
-    constructionBase = CONSTRUCTION.reduce((a, id) => a + subs[id], 0);
-    lastSummary = { domes: qv('un1'), cabins: qv('un4'), units, cats: subs, total, quoted: nQ };
+    constructionBase = CONSTRUCTION.reduce((a, id) => a + t.subs[id], 0);
+    lastSummary = { domes: t.domes, cabins: t.cabins, units, cats: t.subs, total: t.total, quoted: nQ };
+    lastLines = t.lines;
     const us = $('unitsum');
-    if (us) us.innerHTML = units ? 'Your unit count: <b>' + units + '</b> (' + qv('un1') + ' domes, ' + qv('un4') + ' cabins). Every per-unit cost multiplies by this.' : 'Start by entering how many domes and cabins you plan. That sets your unit count for every per-unit cost.';
+    if (us) us.innerHTML = units ? 'Your unit count: <b>' + units + '</b> (' + t.domes + ' domes, ' + t.cabins + ' cabins). Every per-unit cost multiplies by this.' : 'Start by entering how many domes and cabins you plan. That sets your unit count for every per-unit cost.';
     ALL.forEach(l => { if (l.range && l.range.pct) $('rg-' + l.id).textContent = rangeText(l); });
-    $('total').textContent = fmt(total);
-    $('perUnit').textContent = !units ? 'Enter your domes and cabins to see cost per unit' : total ? fmt(total / units) + ' per unit across ' + units + ' units' : 'Across ' + units + ' units';
+    $('total').textContent = fmt(t.total);
+    $('perUnit').textContent = !units ? 'Enter your domes and cabins to see cost per unit' : t.total ? fmt(t.total / units) + ' per unit across ' + units + ' units' : 'Across ' + units + ' units';
     const n = ALL.length;
     $('quotedText').textContent = nQ + ' of ' + n + ' lines have vendor quotes';
     $('nQ').textContent = nQ; $('nE').textContent = nE; $('nN').textContent = nN;
     $('barQ').style.width = (nQ / n * 100) + '%';
     $('barE').style.width = (nE / n * 100) + '%';
-    $('mixEmpty').hidden = total > 0;
+    $('mixEmpty').hidden = t.total > 0;
     CATS.forEach(c => {
-      const p = total ? subs[c.id] / total * 100 : 0;
+      const p = t.total ? t.subs[c.id] / t.total * 100 : 0;
       $('mp-' + c.id).textContent = Math.round(p) + '%';
       $('mb-' + c.id).style.width = p + '%';
     });
   }
 
+  // ---- Budget switcher ----
+  function budgetIds() {
+    return Object.keys(lib).sort((a, b) => labelOf(lib[a]).localeCompare(labelOf(lib[b])));
+  }
+  function renderSwitcher() {
+    const ids = budgetIds();
+    const many = ids.length > 1;
+    $('switchWrap').hidden = !many;
+    $('compareBtn').hidden = !many;
+    $('budgetSelect').innerHTML = ids.map(id => `<option value="${id}"${id === state.id ? ' selected' : ''}>${esc(labelOf(lib[id]))}</option>`).join('');
+    if (document.activeElement !== $('propName')) $('propName').value = state.prop || '';
+  }
+
   function showBudget() {
     $('loadingView').hidden = true;
     $('startView').hidden = true;
+    $('compareView').hidden = true;
     $('budgetView').hidden = false;
     $('shareBar').hidden = !(ENDPOINT && state.id);
     $('savedNote').hidden = false;
-    if (ENDPOINT && state.id) setUrl();
+    setUrl();
     build();
     update();
+    renderSwitcher();
   }
   function showStart(msg) {
     $('loadingView').hidden = true;
     $('budgetView').hidden = true;
+    $('compareView').hidden = true;
     $('startView').hidden = false;
     if (msg) { $('startErr').textContent = msg; $('startErr').hidden = false; }
+  }
+
+  // Open a budget: from this device first, then refresh from the Sheet in case it changed on another device.
+  function openBudget(id) {
+    flushSave();
+    const b = lib[id];
+    if (b) {
+      state = { ...state, id, ...snapshotOf(b) };
+      saveLocal();
+      showBudget();
+    }
+    if (!ENDPOINT) return;
+    if (!b) { $('startView').hidden = true; $('budgetView').hidden = true; $('loadingView').hidden = false; }
+    api({ action: 'load', id })
+      .then(res => {
+        if (!res.ok) {
+          if (b) return;
+          return showStart('We couldn’t find a budget for that link. Start a new one below, or have your link emailed to you.');
+        }
+        const known = lib[id];
+        const newer = !known || (res.savedAt || 0) > (known.remoteAt || 0) + 1000;
+        if (newer) {
+          const r = res.state || {};
+          lib[id] = { prop: res.prop || r.prop || '', vals: r.vals || {}, status: r.status || {}, qty: r.qty || {}, open: r.open || { units: true }, savedAt: res.savedAt, remoteAt: res.savedAt };
+          if (!state.name && res.name) state.name = res.name;
+          if (!state.email && res.email) state.email = res.email;
+          if (!state.ack) state.ack = 'link';
+          if (state.id === id || !b) { state = { ...state, id, ...snapshotOf(lib[id]) }; saveLocal(); showBudget(); }
+          else saveLocal();
+        }
+        if (state.id === id) setSaved('Saved');
+      })
+      .catch(() => { if (!b) showStart('We couldn’t load your budget. Check your internet connection and refresh the page.'); });
   }
 
   // ---- Start screen ----
@@ -612,19 +782,20 @@ h1, h2 { text-wrap: balance; }
     if (!emailOk(email)) return startErr('Please enter a valid email so we can send you a link to your budget.', 'fEmail');
     if (!$('ackCheck').checked) return startErr('Please check the box above to confirm you have read this before starting.', 'ackCheck');
     const begin = (id) => {
-      state = { ...state, id: id || null, name, email, ack: new Date().toISOString() };
+      flushSave();
+      state = { name, email, ack: new Date().toISOString(), id, prop: '', vals: {}, status: {}, qty: {}, open: { units: true } };
       save();
       showBudget();
       window.scrollTo(0, 0);
     };
-    if (!ENDPOINT) return begin(null);
+    if (!ENDPOINT) return begin(genId());
     const btn = $('startBtn');
     btn.disabled = true; btn.textContent = 'Starting…';
     api({ action: 'create', name, email })
       .then(res => {
         if (!res.ok) throw new Error(res.error);
         begin(res.id);
-        setTimeout(() => { $('shareText').textContent = 'We emailed your private link to ' + email + '. Your budget saves automatically.'; }, 0);
+        $('shareText').textContent = 'We emailed your private link to ' + email + '. Your budget saves automatically.';
       })
       .catch(() => startErr('We couldn’t start your budget. Check your internet connection and try again.'))
       .finally(() => { btn.disabled = false; btn.textContent = 'Start my budget →'; });
@@ -650,8 +821,102 @@ h1, h2 { text-wrap: balance; }
   $('emailLink').addEventListener('click', () => {
     if (!state.email) return;
     api({ action: 'resend', email: state.email }).catch(() => {});
-    $('shareText').textContent = 'We emailed your link to ' + state.email + '. It can take a few minutes to arrive.';
+    $('shareText').textContent = 'We emailed your links to ' + state.email + '. It can take a few minutes to arrive.';
   });
+
+  // ---- Property name, switching and new budgets ----
+  $('propName').addEventListener('input', (e) => {
+    state.prop = e.target.value.slice(0, 100);
+    saveSoon();
+    const opt = $('budgetSelect').querySelector(`option[value="${state.id}"]`);
+    if (opt) opt.textContent = labelOf(state);
+  });
+  $('propName').addEventListener('blur', renderSwitcher);
+  $('budgetSelect').addEventListener('change', (e) => { if (e.target.value !== state.id) { openBudget(e.target.value); window.scrollTo(0, 0); } });
+
+  $('newBudgetBtn').addEventListener('click', () => { $('newPanel').hidden = false; $('newErr').hidden = true; $('newCopy').focus(); });
+  $('newCancel').addEventListener('click', () => { $('newPanel').hidden = true; });
+  function newBudget(copy) {
+    flushSave();
+    const base = copy
+      ? { prop: state.prop ? state.prop + ' (copy)' : '', vals: { ...state.vals }, status: { ...state.status }, qty: { ...state.qty }, open: { ...state.open } }
+      : { prop: '', vals: {}, status: {}, qty: {}, open: { units: true } };
+    const finish = (id) => {
+      lib[id] = { ...base, savedAt: Date.now(), remoteAt: 0 };
+      state = { ...state, id, ...snapshotOf(lib[id]) };
+      saveLocal();
+      $('newPanel').hidden = true;
+      showBudget();
+      window.scrollTo(0, 0);
+      $('propName').focus();
+      $('propName').select();
+      if (ENDPOINT) $('shareText').textContent = 'New budget started. We emailed its link to ' + state.email + '.';
+    };
+    if (!ENDPOINT) return finish(genId());
+    const btns = [$('newCopy'), $('newBlank')];
+    btns.forEach(b => { b.disabled = true; });
+    const t = totalsOf(base);
+    api({ action: 'create', another: true, name: state.name, email: state.email, prop: base.prop,
+          state: copy ? payloadState(base) : undefined,
+          summary: copy ? { domes: t.domes, cabins: t.cabins, units: t.units, cats: t.subs, total: t.total, quoted: Object.values(base.status).filter(s => s === 'quote').length } : undefined,
+          lines: copy ? t.lines : undefined })
+      .then(res => { if (!res.ok) throw new Error(res.error); finish(res.id); })
+      .catch(() => { $('newErr').hidden = false; })
+      .finally(() => btns.forEach(b => { b.disabled = false; }));
+  }
+  $('newCopy').addEventListener('click', () => newBudget(true));
+  $('newBlank').addEventListener('click', () => newBudget(false));
+
+  // ---- Compare ----
+  function renderCompare() {
+    const a = $('cmpA').value, b = $('cmpB').value;
+    const A = lib[a], B = lib[b];
+    if (!A || !B) return;
+    const ta = totalsOf(A), tb = totalsOf(B);
+    $('cmpHeadA').textContent = labelOf(A);
+    $('cmpHeadB').textContent = labelOf(B);
+    const row = (label, va, vb, money, strong) => {
+      const d = vb - va;
+      const cell = (v) => money ? fmt(v) : String(v);
+      const dc = money ? (d ? fmtDiff(d) : '–') : (d ? (d > 0 ? '+' : '−') + Math.abs(d) : '–');
+      return `<tr${strong ? ' class="cmp-total"' : ''}><th scope="row">${esc(label)}</th><td>${cell(va)}</td><td>${cell(vb)}</td><td class="${d > 0 ? 'up' : d < 0 ? 'down' : ''}">${dc}</td></tr>`;
+    };
+    const perA = ta.units ? ta.total / ta.units : 0, perB = tb.units ? tb.total / tb.units : 0;
+    $('cmpBody').innerHTML =
+      row('Domes', ta.domes, tb.domes, false) +
+      row('Cabins', ta.cabins, tb.cabins, false) +
+      row('Total units', ta.units, tb.units, false) +
+      CATS.map(c => row(c.name, ta.subs[c.id], tb.subs[c.id], true)).join('') +
+      row('Total project budget', ta.total, tb.total, true, true) +
+      row('Cost per unit', perA, perB, true);
+    const diff = tb.total - ta.total;
+    let biggest = null;
+    CATS.forEach(c => { const d = tb.subs[c.id] - ta.subs[c.id]; if (!biggest || Math.abs(d) > Math.abs(biggest.d)) biggest = { name: c.name, d }; });
+    let msg;
+    if (a === b) msg = 'Pick two different budgets to compare.';
+    else if (!ta.total && !tb.total) msg = 'Add costs to these budgets to see how they compare.';
+    else if (!diff) msg = labelOf(B) + ' and ' + labelOf(A) + ' come to the same total.';
+    else {
+      msg = labelOf(B) + ' is ' + fmt(Math.abs(diff)) + (diff > 0 ? ' more' : ' less') + ' than ' + labelOf(A) + '.';
+      if (biggest && biggest.d) msg += ' The biggest difference is ' + biggest.name + ' (' + fmtDiff(biggest.d) + ').';
+    }
+    $('cmpSummary').textContent = msg;
+  }
+  $('compareBtn').addEventListener('click', () => {
+    flushSave();
+    const ids = budgetIds();
+    const opts = ids.map(id => `<option value="${id}">${esc(labelOf(lib[id]))}</option>`).join('');
+    $('cmpA').innerHTML = opts; $('cmpB').innerHTML = opts;
+    $('cmpA').value = state.id;
+    $('cmpB').value = ids.find(id => id !== state.id) || state.id;
+    $('budgetView').hidden = true;
+    $('compareView').hidden = false;
+    renderCompare();
+    window.scrollTo(0, 0);
+  });
+  $('cmpA').addEventListener('change', renderCompare);
+  $('cmpB').addEventListener('change', renderCompare);
+  $('cmpBack').addEventListener('click', () => { $('compareView').hidden = true; $('budgetView').hidden = false; window.scrollTo(0, 0); });
 
   // ---- Budget interactions ----
   $('cats').addEventListener('click', (e) => {
@@ -702,35 +967,18 @@ h1, h2 { text-wrap: balance; }
   $('resetBtn').addEventListener('click', () => { $('resetIdle').hidden = true; $('resetConfirm').hidden = false; $('resetNo').focus(); });
   $('resetNo').addEventListener('click', () => { $('resetConfirm').hidden = true; $('resetIdle').hidden = false; });
   $('resetYes').addEventListener('click', () => {
-    state = { id: state.id, name: state.name, email: state.email, ack: state.ack, vals: {}, status: {}, qty: {}, open: { units: true } };
+    state = { ...state, vals: {}, status: {}, qty: {}, open: { units: true } };
     save(); build(); update();
     $('resetConfirm').hidden = true; $('resetIdle').hidden = false;
   });
 
-  function applyRemote(res, id) {
-    const r = res.state || {};
-    state = { ...state, id, ack: state.ack || 'remote', name: res.name || state.name,
-      vals: r.vals || {}, status: r.status || {}, qty: r.qty || {}, open: r.open || { units: true }, remoteAt: res.savedAt };
-    saveLocal();
-  }
+  // ---- Start up ----
   const urlId = (new URLSearchParams(location.search).get('b') || '').toLowerCase();
   // Open the budget from the link, or the one this device last used, so edits made on another device show up here.
   const linkId = /^[a-f0-9]{32}$/.test(urlId) ? urlId : (state.id || '');
-  if (ENDPOINT && /^[a-f0-9]{32}$/.test(linkId)) {
-    if (state.id === linkId) showBudget();
-    else { $('startView').hidden = true; $('loadingView').hidden = false; }
-    api({ action: 'load', id: linkId })
-      .then(res => {
-        if (!res.ok) {
-          if (state.id === linkId) return;
-          return showStart('We couldn’t find a budget for that link. Start a new one below, or have your link emailed to you.');
-        }
-        const newer = state.id !== linkId || (res.savedAt || 0) > (state.remoteAt || 0) + 1000;
-        if (newer) { applyRemote(res, linkId); showBudget(); }
-        setSaved('Saved');
-      })
-      .catch(() => { if (state.id !== linkId) showStart('We couldn’t load your budget. Check your internet connection and refresh the page.'); });
-  } else if (state.ack && (!ENDPOINT || state.id)) {
+  if (ENDPOINT && /^[a-f0-9]{32}$/.test(linkId) && (urlId || state.ack)) {
+    openBudget(linkId);
+  } else if (!ENDPOINT && state.ack && state.id) {
     showBudget();
   } else if (state.name || state.email) {
     // Started before cloud saving was on: prefill the sign-up so they can get a link.

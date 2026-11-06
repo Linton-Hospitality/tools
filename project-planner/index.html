@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <style>body{margin:0}img{max-width:100%}</style>
 <title>Budget Planner | Ferncrest</title>
 <meta name="robots" content="noindex, nofollow">
@@ -444,18 +447,19 @@ h1, h2 { text-wrap: balance; }
       tip: 'Infrastructure is the line most likely to surprise you on raw land. Call the utility before you buy.',
       lines: [
         { id: 'inf1', name: 'Electrical and internet service', basis: 'p', drivers: 'Distance to the nearest utility pole, transformer needs, the utility’s line extension policy, fiber availability', range: { usd: [15000, 60000] } },
-        { id: 'inf2', name: 'Water', basis: 'p', drivers: 'Municipal tap fee versus well depth and yield, water treatment needs', range: { usd: [10000, 40000] } },
-        { id: 'inf3', name: 'Wastewater', basis: 'p', drivers: 'Soil conditions, sewer access, septic system size for your unit count', range: { usd: [20000, 75000] } } ] },
+        { id: 'inf2', name: 'Water', basis: 'p', drivers: 'Municipal tap fee versus well depth and yield, water treatment needs. Bath pods push this higher', range: { usd: [10000, 40000] } },
+        { id: 'inf3', name: 'Wastewater', basis: 'p', drivers: 'Soil conditions, sewer access, septic system size for your unit count. Bath pods push this higher', range: { usd: [20000, 75000] } } ] },
     { id: 'site', name: 'Site Work', color: '#306739', blurb: 'Preparing the land',
       tip: 'Get one contractor to quote all site work together. Splitting it across trades often leaves gaps between scopes.',
       lines: [
         { id: 'site1', name: 'Clearing, grading and roads', basis: 'p', drivers: 'Tree cover, slope, rock, road length, gravel versus paved, fire access requirements', range: { usd: [25000, 100000] } },
         { id: 'site3', name: 'Landscaping, paths and lighting', basis: 'p', drivers: 'Landscaping is the biggest driver: plantings, screening between units, irrigation. Then path length and surface, accessibility and dark sky lighting rules', range: { usd: [25000, 125000] } } ] },
     { id: 'units', name: 'Units', color: '#3D4A1A', blurb: 'Domes and cabins, and everything each one needs',
-      tip: 'Enter how many domes and cabins you plan. Together they set your unit count, and every per-unit cost in your budget multiplies by it.',
+      tip: 'Enter how many domes and cabins you plan. Together they set your unit count, and every per-unit cost in your budget multiplies by it. Add bath pods if you are including private bathrooms.',
       lines: [
         { id: 'un1', name: 'Domes', basis: 'u', qty: true, drivers: 'Dome size (5M, 7M or 9M), window and door packages, insulation. Product only, not delivery or installation', range: { usd: [10000, 30000] } },
         { id: 'un4', name: 'Cabins', basis: 'u', qty: true, drivers: 'Studio to two-bedroom, finish level, custom requests. Product only, not delivery or installation', range: { usd: [35000, 110000] } },
+        { id: 'un6', name: 'Bath pods', basis: 'u', per: 'pod', qty: true, drivers: 'Standard or ADA size, plus add-ons ($2,000 to $5,000 per pod). Ferncrest pricing; other suppliers vary. Product only, not installation or plumbing. Not counted in your unit count', range: { usd: [20000, 25000], suffix: ' per pod, before add-ons' } },
         { id: 'un5', name: 'Delivery and installation', basis: 'u', drivers: 'Domes or cabins, freight distance, truck access to each site, installation crew travel', range: { usd: [750, 6000], tierLabel: '. For full turnkey delivery and installation:', tiers: [['Domes', 750, 1500], ['Cabins', 4000, 6000]] } },
         { id: 'site2', name: 'Leveling, platforms and electrical hookups', basis: 'u', drivers: 'Dome size is the biggest driver, then slope at each site, trench distance and rock', range: { usd: [10000, 50000], tierLabel: ', depending on dome size:', tiers: [['5M dome', 10000, 26000], ['7M dome', 15000, 39000], ['9M dome', 20000, 50000]] } },
         { id: 'un2', name: 'Mini-split HVAC', basis: 'u', drivers: 'Climate zone, unit size, number of indoor heads, electrical capacity', range: { usd: [3500, 8000] } },
@@ -623,13 +627,13 @@ h1, h2 { text-wrap: balance; }
         return `
         <div class="line">
           <div class="line-info">
-            <div class="line-name"><strong>${esc(l.name)}</strong>${l.basis === 'u' ? '<span class="tag unit">Per unit</span>' : ''}</div>
+            <div class="line-name"><strong>${esc(l.name)}</strong>${l.basis === 'u' ? '<span class="tag unit">' + (l.per ? 'Per ' + l.per : 'Per unit') + '</span>' : ''}</div>
             <p class="drivers"><b>What drives it:</b> ${esc(l.drivers)}</p>
             <p class="range">Typical range: <b id="rg-${l.id}">${esc(rangeText(l))}</b>${l.range && l.range.tiers ? esc(l.range.tierLabel || '') : ''}</p>
             ${l.range && l.range.tiers ? `<ul class="tiers">${l.range.tiers.map(t => `<li><span>${esc(t[0])}</span><b>${fmt(t[1])} to ${fmt(t[2])}</b></li>`).join('')}</ul>` : ''}
           </div>
           <div class="line-input">
-            <label for="in-${l.id}">${l.basis === 'u' ? 'Your cost per unit' : 'Your cost'}</label>
+            <label for="in-${l.id}">${l.basis === 'u' ? 'Your cost per ' + (l.per || 'unit') : 'Your cost'}</label>
             <div class="money"><span aria-hidden="true">$</span><input id="in-${l.id}" data-line="${l.id}" type="text" inputmode="numeric" autocomplete="off" placeholder="Enter" value="${v ? Number(v).toLocaleString('en-US') : ''}"></div>
             ${l.qty !== undefined ? `<div class="qty"><label for="q-${l.id}">How many</label><input id="q-${l.id}" data-qty="${l.id}" class="num" type="number" inputmode="numeric" min="0" max="200" placeholder="0" value="${(state.qty || {})[l.id] ?? ''}"></div>` : ''}
             <span class="ext num" id="ext-${l.id}"></span>
